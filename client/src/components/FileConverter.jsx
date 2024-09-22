@@ -73,28 +73,28 @@ export default function ImageConverterPro() {
   }
 
   const handleConvert = async () => {
-    setShowFormatPopup(false)
-    setError(null)
-    setConvertProgress(0)
-
+    setShowFormatPopup(false);
+    setError(null);
+    setConvertProgress(0);
+  
     try {
       // Upload the file
-      const uploadResponse = await api.uploadFile(file)
-      setConvertProgress(33)
-
+      const uploadResponse = await api.uploadFile(file);
+      setConvertProgress(33);
+  
       // Convert the file
-      const conversionResponse = await api.convertFile(uploadResponse.filename, selectedFormat)
-      setConvertProgress(66)
-
-      setConvertedFilename(conversionResponse.convertedFilename)
-      setConversionComplete(true)
-      setConvertProgress(100)
+      const conversionResponse = await api.convertFile(uploadResponse.filename, selectedFormat);
+      setConvertProgress(66);
+  
+      setConvertedFilename(conversionResponse.convertedFilename);
+      setConversionComplete(true);
+      setConvertProgress(100);
     } catch (err) {
-      console.error('Conversion error:', err)
-      setError(`Conversion failed: ${err.message || 'An unexpected error occurred'}`)
-      setConvertProgress(0)
+      console.error('Conversion error:', err);
+      setError(`Conversion failed: ${err.message || 'An unexpected error occurred'}. Please check the console for more details.`);
+      setConvertProgress(0);
     }
-  }
+  };
 
   const handleDownload = () => {
     if (convertedFilename) {
