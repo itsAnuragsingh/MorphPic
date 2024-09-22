@@ -45,14 +45,28 @@ app.get('/api/download/:filename', async (req, res) => {
   const { filename } = req.params;
   try {
     const file = await downloadFromBlobStore(filename);
-    res.setHeader('Content-Type', 'application/octet-stream');
-    res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
-    res.send(file);
+    const contentType = getContentTypeFromFilename(filename);
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(Buffer.from(file));
   } catch (error) {
     console.error('Download error:', error);
     res.status(500).json({ error: 'Download failed' });
   }
 });
+
+function getContentTypeFromFilename(filename) {
+  const extension = filename.split('.').pop().toLowerCase();
+  const contentTypes = {
+    'jpg': 'image/jpeg',
+    'jpeg': 'image/jpeg',
+    'png': 'image/png',
+    'webp': 'image/webp',
+    'tiff': 'image/tiff',
+    'avif': 'image/avif'
+  };
+  return contentTypes[extension] || 'application/octet-stream';
+}
 
 // Delete files after successful download
 app.post('/api/delete', async (req, res) => {
