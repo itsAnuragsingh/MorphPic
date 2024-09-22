@@ -117,18 +117,10 @@ export default function ImageConverterPro() {
     } catch (err) {
       console.error('Download error:', err);
       setError(`Download failed: ${err.message || 'An unexpected error occurred'}. Please try again.`);
-    } finally {
-      setIsDownloading(false);
     }
 
     // Separate the deleteFiles call and error handling
-    try {
-      await api.deleteFiles(file.name, convertedFilename);
-    } catch (deleteErr) {
-      console.error('Delete error:', deleteErr);
-      // Optionally set a different error state for file deletion issues
-      setError(`File deletion failed: ${deleteErr.message || 'An unexpected error occurred.'}`);
-    }
+    
   }
 };
 
@@ -395,7 +387,7 @@ export default function ImageConverterPro() {
                   >
                     <Download className="mr-2 h-5 w-5" /> {isDownloading ? 'Downloading...' : 'Download'}
                   </motion.button>
-                  {error && <p className="text-red-500">{error}</p>}
+                  
                 </motion.div>
               )}
             </AnimatePresence>
