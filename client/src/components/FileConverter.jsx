@@ -156,7 +156,7 @@ export default function ImageConverterPro() {
               transition={{ duration: 0.5 }}
             >
               <span className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
-              Morphify
+              MorphPic
               </span>
             </motion.div>
             <div className="hidden md:flex items-center space-x-4">
