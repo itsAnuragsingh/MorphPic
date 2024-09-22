@@ -11,6 +11,7 @@ export default function ImageConverterPro() {
   const [selectedFormat, setSelectedFormat] = useState('')
   const [conversionComplete, setConversionComplete] = useState(false)
   const [convertedFilename, setConvertedFilename] = useState(null)
+  const [isDownloading, setIsDownloading] = useState(false);
   const [error, setError] = useState(null)
   const [darkMode, setDarkMode] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
