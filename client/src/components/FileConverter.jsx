@@ -1,8 +1,6 @@
-'use client'
-
 import React, { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence, useAnimation } from 'framer-motion'
-import { Upload, Download, Image, AlertCircle, Moon, Sun, ChevronDown, Menu, X, Home, Star, DollarSign, Mail } from 'lucide-react'
+import { Upload, Download, Image, AlertCircle, Moon, Sun, ChevronDown, Menu, X, Home, Star, Mail } from 'lucide-react'
 import * as api from '../services/api'
 
 export default function ImageConverterPro() {
@@ -91,16 +89,35 @@ export default function ImageConverterPro() {
       setConvertProgress(100);
     } catch (err) {
       console.error('Conversion error:', err);
-      setError(`Conversion failed: ${err.message || 'An unexpected error occurred'}. Please check the console for more details.`);
+      setError(`Conversion failed: ${err.message || 'An unexpected error occurred'}. Please try again.`);
       setConvertProgress(0);
     }
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (convertedFilename) {
-      api.downloadFile(convertedFilename)
+      try {
+        const blob = await api.downloadFile(convertedFilename);
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = `converted_image.${selectedFormat}`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        // Delete files after successful download
+        await api.deleteFiles(file.name, convertedFilename);
+        // Reset state
+        setFile(null);
+        setConvertedFilename(null);
+        setConversionComplete(false);
+      } catch (err) {
+        console.error('Download error:', err);
+        setError(`Download failed: ${err.message || 'An unexpected error occurred'}. Please try again.`);
+      }
     }
-  }
+  };
 
   const handleRetry = () => {
     setError(null)
@@ -119,7 +136,6 @@ export default function ImageConverterPro() {
   const navItems = [
     { name: 'Home', icon: Home },
     { name: 'Features', icon: Star },
-    // { name: 'Pricing', icon: DollarSign },
     { name: 'Contact', icon: Mail },
   ]
 
