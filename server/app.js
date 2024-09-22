@@ -1,37 +1,25 @@
-// server.js
 const express = require('express');
 const multer = require('multer');
-const cloudinary = require('cloudinary').v2;
+const { put, del, list } = require('@vercel/blob');
 const sharp = require('sharp');
-const fs = require('fs');
-const path = require('path');
 const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
-const upload = multer({ dest: 'uploads/' });
-
-// Cloudinary configuration
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
-});
+const upload = multer({ storage: multer.memoryStorage() });
 
 app.use(cors());
 app.use(express.json());
 
-
-app.get('/',(req, res) => {
+app.get('/', (req, res) => {
   res.send('API working.....');
-})
+});
 
-// Upload file to Cloudinary
+// Upload file to Vercel Blob Store
 app.post('/api/upload', upload.single('file'), async (req, res) => {
   try {
-    const result = await cloudinary.uploader.upload(req.file.path);
-    fs.unlinkSync(req.file.path); // Delete local file after upload
-    res.json({ filename: result.public_id });
+    const { url } = await put(req.file.originalname, req.file.buffer, { access: 'public' });
+    res.json({ filename: url });
   } catch (error) {
     console.error('Upload error:', error);
     res.status(500).json({ error: 'Upload failed' });
@@ -42,10 +30,10 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
 app.post('/api/convert', async (req, res) => {
   const { filename, format } = req.body;
   try {
-    const inputBuffer = await downloadFromCloudinary(filename);
+    const inputBuffer = await downloadFromBlobStore(filename);
     const outputBuffer = await convertImage(inputBuffer, format);
-    const result = await uploadToCloudinary(outputBuffer, format);
-    res.json({ convertedFilename: result.public_id });
+    const { url } = await put(`converted_${Date.now()}.${format}`, outputBuffer, { access: 'public' });
+    res.json({ convertedFilename: url });
   } catch (error) {
     console.error('Conversion error:', error);
     res.status(500).json({ error: 'Conversion failed' });
@@ -56,8 +44,10 @@ app.post('/api/convert', async (req, res) => {
 app.get('/api/download/:filename', async (req, res) => {
   const { filename } = req.params;
   try {
-    const result = await cloudinary.api.resource(filename);
-    res.redirect(result.secure_url);
+    const file = await downloadFromBlobStore(filename);
+    res.setHeader('Content-Type', 'application/octet-stream');
+    res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+    res.send(file);
   } catch (error) {
     console.error('Download error:', error);
     res.status(500).json({ error: 'Download failed' });
@@ -68,8 +58,8 @@ app.get('/api/download/:filename', async (req, res) => {
 app.post('/api/delete', async (req, res) => {
   const { originalFilename, convertedFilename } = req.body;
   try {
-    await cloudinary.uploader.destroy(originalFilename);
-    await cloudinary.uploader.destroy(convertedFilename);
+    await del(originalFilename);
+    await del(convertedFilename);
     res.json({ message: 'Files deleted successfully' });
   } catch (error) {
     console.error('Deletion error:', error);
@@ -78,9 +68,8 @@ app.post('/api/delete', async (req, res) => {
 });
 
 // Helper functions
-async function downloadFromCloudinary(publicId) {
-  const result = await cloudinary.api.resource(publicId);
-  const response = await fetch(result.secure_url);
+async function downloadFromBlobStore(url) {
+  const response = await fetch(url);
   return response.arrayBuffer();
 }
 
@@ -102,19 +91,6 @@ async function convertImage(inputBuffer, format) {
     default:
       throw new Error('Unsupported format');
   }
-}
-
-async function uploadToCloudinary(buffer, format) {
-  return new Promise((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      { resource_type: 'image', format: format },
-      (error, result) => {
-        if (error) reject(error);
-        else resolve(result);
-      }
-    );
-    uploadStream.end(buffer);
-  });
 }
 
 const PORT = process.env.PORT || 3000;

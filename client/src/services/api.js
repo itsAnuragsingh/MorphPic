@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://morphify-api.vercel.app/api';
+const API_BASE_URL = 'https://morphify-api.vercel.app/api'; // Change this to use relative URL for API routes
 
 export const uploadFile = async (file) => {
   const formData = new FormData();
