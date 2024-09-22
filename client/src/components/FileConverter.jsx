@@ -95,36 +95,43 @@ export default function ImageConverterPro() {
     }
   };
 
-  const handleDownload = async () => {
-    if (convertedFilename) {
-      setIsDownloading(true);
-      setError(null);
-      try {
-        const blob = await api.downloadFile(convertedFilename);
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.style.display = 'none';
-        a.href = url;
-        a.download = `converted_image.${selectedFormat}`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        
-        // Delete files after successful download
-        await api.deleteFiles(file.name, convertedFilename);
-        
-        // Reset state
-        setFile(null);
-        setConvertedFilename(null);
-        setConversionComplete(false);
-      } catch (err) {
-        console.error('Download error:', err);
-        setError(`Download failed: ${err.message || 'An unexpected error occurred'}. Please try again.`);
-      } finally {
-        setIsDownloading(false);
-      }
+ const handleDownload = async () => {
+  if (convertedFilename) {
+    setIsDownloading(true);
+    setError(null);
+    try {
+      const blob = await api.downloadFile(convertedFilename);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `converted_image.${selectedFormat}`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+
+      // Reset file state after download
+      setFile(null);
+      setConvertedFilename(null);
+      setConversionComplete(false);
+    } catch (err) {
+      console.error('Download error:', err);
+      setError(`Download failed: ${err.message || 'An unexpected error occurred'}. Please try again.`);
+    } finally {
+      setIsDownloading(false);
     }
-  };
+
+    // Separate the deleteFiles call and error handling
+    try {
+      await api.deleteFiles(file.name, convertedFilename);
+    } catch (deleteErr) {
+      console.error('Delete error:', deleteErr);
+      // Optionally set a different error state for file deletion issues
+      setError(`File deletion failed: ${deleteErr.message || 'An unexpected error occurred.'}`);
+    }
+  }
+};
+
   const handleRetry = () => {
     setError(null)
     setConvertProgress(0)
