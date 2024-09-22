@@ -388,6 +388,7 @@ export default function ImageConverterPro() {
                   >
                     <Download className="mr-2 h-5 w-5" /> {isDownloading ? 'Downloading...' : 'Download'}
                   </motion.button>
+                  {error && <p className="text-red-500">{error}</p>}
                 </motion.div>
               )}
             </AnimatePresence>
