@@ -380,11 +380,12 @@ export default function ImageConverterPro() {
                   <h3 className="text-2xl font-bold mb-4 text-purple-600 dark:text-purple-400">Conversion Complete!</h3>
                   <motion.button
                     onClick={handleDownload}
+                    disabled={isDownloading || !convertedFilename}
                     className="w-full bg-gradient-to-r from-green-400 to-blue-500 text-white px-6 py-3 rounded-xl hover:from-green-500 hover:to-blue-600 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <Download className="mr-2 h-5 w-5" /> Download Converted File
+                    <Download className="mr-2 h-5 w-5" /> {isDownloading ? 'Downloading...' : 'Download'}
                   </motion.button>
                 </motion.div>
               )}
