@@ -96,6 +96,8 @@ export default function ImageConverterPro() {
 
   const handleDownload = async () => {
     if (convertedFilename) {
+      setIsDownloading(true);
+      setError(null);
       try {
         const blob = await api.downloadFile(convertedFilename);
         const url = window.URL.createObjectURL(blob);
@@ -106,8 +108,10 @@ export default function ImageConverterPro() {
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
+        
         // Delete files after successful download
         await api.deleteFiles(file.name, convertedFilename);
+        
         // Reset state
         setFile(null);
         setConvertedFilename(null);
@@ -115,10 +119,11 @@ export default function ImageConverterPro() {
       } catch (err) {
         console.error('Download error:', err);
         setError(`Download failed: ${err.message || 'An unexpected error occurred'}. Please try again.`);
+      } finally {
+        setIsDownloading(false);
       }
     }
   };
-
   const handleRetry = () => {
     setError(null)
     setConvertProgress(0)
