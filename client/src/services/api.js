@@ -15,7 +15,7 @@ export const convertFile = async (filename, format) => {
 };
 
 export const downloadFile = async (filename) => {
-  const response = await axios.get(`${API_BASE_URL}/download/${filename}`, {
+  const response = await axios.get(`${API_BASE_URL}/download/${encodeURIComponent(filename)}`, {
     responseType: 'blob'
   });
   return response.data;
